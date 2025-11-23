@@ -1,0 +1,44 @@
+<icegrid>
+    <application name="SITM-MIO">
+        <replica-group id="CoordinatorGroup">
+            <load-balancing type="round-robin"/>
+            <object identity="Coordinator" type="::SITM::Coordinator" 
+                    adapter-id="CoordinatorAdapter" 
+                    endpoint="tcp -h swarch@x104m01 -p 10000"/>
+        </replica-group>
+        
+        <replica-group id="GraphServiceGroup">
+            <load-balancing type="round-robin"/>
+            <object identity="GraphService" type="::SITM::GraphService" 
+                    adapter-id="GraphServiceAdapter" 
+                    endpoint="tcp -h swarch@x104m01 -p 10001"/>
+        </replica-group>
+        
+        <server-template id="WorkerTemplate">
+            <parameter name="workerId" default="worker1"/>
+            <parameter name="coordinatorEndpoint" default="tcp -h swarch@x104m01 -p 10000"/>
+            <server id="${workerId}" exe="java" activation="on-demand">
+                <option>-Xmx2g</option>
+                <option>-Djava.library.path=/usr/lib</option>
+                <option>worker.WorkerNode</option>
+                <option>${workerId}</option>
+                <option>${coordinatorEndpoint}</option>
+                <adapter name="WorkerAdapter" endpoints="tcp"/>
+            </server>
+        </server-template>
+        
+        <node name="x104m01">
+            <server-instance template="CoordinatorTemplate" directory="${application.distrib}"/>
+        </node>
+        
+        <node name="x104m02">
+            <server-instance template="WorkerTemplate" workerId="worker1"/>
+        </node>
+        
+        <node name="x104m03">
+            <server-instance template="WorkerTemplate" workerId="worker2"/>
+        </node>
+        
+    </application>
+</icegrid>
+

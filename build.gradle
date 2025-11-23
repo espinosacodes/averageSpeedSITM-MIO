@@ -4,14 +4,20 @@ plugins {
 }
 
 application {
-    mainClass = 'Main'
+    mainClass = 'coordinator.CoordinatorNode'
 }
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://repo.zeroc.com/nexus/content/repositories/releases'
+    }
 }
 
 dependencies {
+    implementation 'com.zeroc:ice:3.7.10'
+    implementation 'org.postgresql:postgresql:42.7.1'
+    implementation 'redis.clients:jedis:5.1.0'
     testImplementation 'junit:junit:4.13.2'
 }
 
@@ -20,10 +26,35 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', 'src/main/slice-generated']
+        }
+    }
+}
+
+task generateSlice {
+    description = 'Generates Java code from Ice slice files'
+    group = 'build'
+    def sliceDir = file('src/main/slice')
+    def outputDir = file('src/main/slice-generated')
+    
+    doLast {
+        outputDir.mkdirs()
+        println "NOTE: Ice slice files need to be compiled manually using:"
+        println "  slice2java --output-dir src/main/slice-generated src/main/slice/*.ice"
+        println "  Or install Ice and configure slice2java in PATH"
+    }
+}
+
+compileJava.dependsOn generateSlice
+
 jar {
     manifest {
-        attributes 'Main-Class': 'Main'
+        attributes 'Main-Class': 'coordinator.CoordinatorNode'
     }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }

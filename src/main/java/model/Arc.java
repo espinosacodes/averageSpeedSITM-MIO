@@ -1,5 +1,7 @@
 package model;
 
+import java.util.Objects;
+
 public class Arc {
     private Stop fromStop;
     private Stop toStop;
@@ -41,6 +43,25 @@ public class Arc {
         return toSequence;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Arc arc = (Arc) o;
+        return routeId == arc.routeId &&
+               orientation == arc.orientation &&
+               fromSequence == arc.fromSequence &&
+               toSequence == arc.toSequence &&
+               fromStop.getStopId() == arc.fromStop.getStopId() &&
+               toStop.getStopId() == arc.toStop.getStopId();
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(routeId, orientation, fromStop.getStopId(), 
+                          toStop.getStopId(), fromSequence, toSequence);
+    }
+    
     @Override
     public String toString() {
         return "Arc{routeId=" + routeId + ", orientation=" + orientation + 

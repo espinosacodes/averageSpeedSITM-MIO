@@ -41,3 +41,11 @@ Thumbs.db
 # Virtual machine crash logs
 hs_err_pid*
 replay_pid*
+
+# Ice generated code
+src/main/slice-generated/
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
