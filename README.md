@@ -43,23 +43,59 @@ El sistema utiliza una arquitectura Master-Worker con ZeroC-ICE para:
 
 ## Uso
 
-### Iniciar Coordinator
+### Desarrollo Local
+
+#### Visualizar grafo (sin Ice)
 ```bash
+./gradlew run --args="Main"
+# O directamente:
+java -cp build/libs/averageSpeedSITM-MIO.jar Main
+```
+
+#### Iniciar Coordinator (local)
+```bash
+# Opción 1: Usando Gradle
+./gradlew run
+
+# Opción 2: Usando JAR
 java -cp build/libs/averageSpeedSITM-MIO.jar coordinator.CoordinatorNode
+
+# Opción 3: Con puerto personalizado
+java -Dcoordinator.port=10002 -cp build/libs/averageSpeedSITM-MIO.jar coordinator.CoordinatorNode
 ```
 
-### Iniciar Worker
+#### Iniciar Worker (local)
 ```bash
-java -cp build/libs/averageSpeedSITM-MIO.jar worker.WorkerNode worker1 "tcp -h swarch@x104m01 -p 10000"
+java -cp build/libs/averageSpeedSITM-MIO.jar worker.WorkerNode worker1 "tcp -h localhost -p 10000"
 ```
 
-### Desplegar en múltiples nodos
+#### Validar instalación local
+```bash
+./src/main/scripts/test_local.sh
+```
+
+### Despliegue Distribuido
+
+#### Desplegar Coordinator
 ```bash
 ./src/main/scripts/deploy_coordinator.sh
-./src/main/scripts/deploy_all_workers.sh
 ```
 
-### Ejecutar prueba de performance
+#### Desplegar Workers
+```bash
+# Todos los workers
+./src/main/scripts/deploy_all_workers.sh
+
+# Worker individual
+./src/main/scripts/deploy_worker.sh worker1 swarch@x104m02 "tcp -h x104m01 -p 10000"
+```
+
+#### Validar despliegue
+```bash
+./src/main/scripts/validate_deployment.sh
+```
+
+#### Ejecutar prueba de performance
 ```bash
 ./src/main/scripts/performance_test.sh proyecto-mio/MIO/datagrams4history.csv 4
 ```
