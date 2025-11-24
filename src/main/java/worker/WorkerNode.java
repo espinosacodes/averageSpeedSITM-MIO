@@ -16,7 +16,8 @@ import java.util.List;
 
 public class WorkerNode {
     
-    private static final String GRAPH_BASE_PATH = "proyecto-mio/MIO/";
+    private static final String GRAPH_BASE_PATH = System.getProperty("graph.path",
+        System.getProperty("user.home") + "/proyecto-mio/MIO/");
     
     public static void main(String[] args) {
         if (args.length < 2) {

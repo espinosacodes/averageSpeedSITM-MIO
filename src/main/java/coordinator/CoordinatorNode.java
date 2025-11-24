@@ -15,7 +15,8 @@ import java.util.List;
 
 public class CoordinatorNode {
     
-    private static final String GRAPH_BASE_PATH = "proyecto-mio/MIO/";
+    private static final String GRAPH_BASE_PATH = System.getProperty("graph.path", 
+        System.getProperty("user.home") + "/proyecto-mio/MIO/");
     
     public static void main(String[] args) {
         int status = 0;
@@ -50,6 +51,22 @@ public class CoordinatorNode {
             System.out.println("GraphService available at: GraphService");
             System.out.println("Coordinator available at: Coordinator");
             System.out.println("Waiting for workers to connect...");
+            
+            // Log status every 30 seconds
+            final CoordinatorI coord = coordinator;
+            Thread statusThread = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        Thread.sleep(30000);
+                        WorkerInfo[] workers = coord.getAvailableWorkers(new com.zeroc.Ice.Current());
+                        System.out.println("[STATUS " + new java.util.Date() + "] Registered workers: " + workers.length);
+                    } catch (java.lang.Exception e) {
+                        // Ignore
+                    }
+                }
+            });
+            statusThread.setDaemon(true);
+            statusThread.start();
             
             communicator.waitForShutdown();
             

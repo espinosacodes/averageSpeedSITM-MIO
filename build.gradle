@@ -58,5 +58,18 @@ jar {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
+    archiveClassifier = 'all'
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'coordinator.CoordinatorNode'
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveClassifier = 'all'
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    with jar
 }
 
