@@ -1,0 +1,102 @@
+graph TB
+    subgraph "Red ZeroTier VPN"
+        subgraph "Nodo Coordinador - swarch@x104m01"
+            COORD[CoordinatorNode<br/>CPU: 4 cores<br/>RAM: 8GB<br/>Almacenamiento: 100GB]
+            COORD_SVC[Coordinator Service<br/>Ice Port: 10000<br/>📌 Master-Worker Pattern]
+            GRAPH_SVC[GraphService<br/>Ice Port: 10001<br/>Grafo en Memoria]
+            PARTITION[Particionador<br/>📌 Data Partitioning Pattern]
+            AGGREGATOR[Agregador de Resultados<br/>📌 Map-Reduce Pattern]
+            
+            COORD --> COORD_SVC
+            COORD --> GRAPH_SVC
+            COORD --> PARTITION
+            COORD --> AGGREGATOR
+        end
+        
+        subgraph "Nodos Workers - swarch@x104m02 a x104m31"
+            W1[WorkerNode 1<br/>x104m02<br/>CPU: 2-4 cores<br/>RAM: 4GB]
+            W2[WorkerNode 2<br/>x104m03<br/>CPU: 2-4 cores<br/>RAM: 4GB]
+            W3[WorkerNode 3<br/>x104m04<br/>CPU: 2-4 cores<br/>RAM: 4GB]
+            WN[WorkerNode N<br/>x104m31<br/>CPU: 2-4 cores<br/>RAM: 4GB]
+            
+            W1_PROC[DataProcessor Service<br/>📌 Parallel Processing]
+            W2_PROC[DataProcessor Service<br/>📌 Parallel Processing]
+            W3_PROC[DataProcessor Service<br/>📌 Parallel Processing]
+            WN_PROC[DataProcessor Service<br/>📌 Parallel Processing]
+            
+            W1 --> W1_PROC
+            W2 --> W2_PROC
+            W3 --> W3_PROC
+            WN --> WN_PROC
+        end
+        
+        subgraph "Nodo de Almacenamiento - swarch@x104m01"
+            PG[(PostgreSQL 14+<br/>Port: 5432<br/>📌 Persistent Storage<br/>Tabla: arc_speeds<br/>Metadatos: tasks, results)]
+            REDIS[(Redis 7+<br/>Port: 6379<br/>📌 Caching Pattern<br/>LRU Cache<br/>TTL: Configurable)]
+        end
+        
+        subgraph "Procesamiento en Tiempo Real"
+            STREAM[StreamProcessor<br/>📌 Event-Driven Pattern<br/>Latencia: <100ms]
+            STREAM_CACHE[Cache en Memoria<br/>ConcurrentHashMap<br/>📌 In-Memory State]
+        end
+    end
+    
+    subgraph "Flujos de Datos"
+        CSV_FILE[Archivo CSV<br/>1M-100M datagramas]
+        CSV_FILE -->|1. Particionamiento| PARTITION
+        PARTITION -->|2. Asignación Round-Robin<br/>📌 Load Balancing Pattern| COORD_SVC
+        COORD_SVC -->|3. Distribución de Particiones| W1_PROC
+        COORD_SVC -->|3. Distribución de Particiones| W2_PROC
+        COORD_SVC -->|3. Distribución de Particiones| W3_PROC
+        COORD_SVC -->|3. Distribución de Particiones| WN_PROC
+        
+        W1_PROC -->|4. Resultados Parciales| AGGREGATOR
+        W2_PROC -->|4. Resultados Parciales| AGGREGATOR
+        W3_PROC -->|4. Resultados Parciales| AGGREGATOR
+        WN_PROC -->|4. Resultados Parciales| AGGREGATOR
+        
+        AGGREGATOR -->|5. Resultados Agregados| PG
+        AGGREGATOR -->|5. Actualización Cache| REDIS
+        
+        STREAM -->|Procesamiento Incremental| STREAM_CACHE
+        STREAM_CACHE -->|Actualización Tiempo Real| REDIS
+        STREAM_CACHE -->|Persistencia Batch| PG
+    end
+    
+    subgraph "Patrones de Diseño para Performance"
+        P1[📌 Master-Worker<br/>Escalabilidad Horizontal<br/>Throughput: 300K dat/seg]
+        P2[📌 Data Partitioning<br/>Balanceo de Carga<br/>Procesamiento Independiente]
+        P3[📌 Map-Reduce<br/>Agregación Eficiente<br/>Latencia: <1s]
+        P4[📌 Caching Pattern<br/>Latencia: <100ms<br/>TTL Configurable]
+        P5[📌 Load Balancing<br/>Round-Robin<br/>Utilización Uniforme]
+        P6[📌 Event-Driven<br/>Procesamiento Tiempo Real<br/>Latencia: <100ms]
+    end
+    
+    style COORD fill:#2e7d32,stroke:#1b5e20,stroke-width:3px,color:#fff
+    style COORD_SVC fill:#1976d2,stroke:#0d47a1,stroke-width:2px,color:#fff
+    style GRAPH_SVC fill:#1976d2,stroke:#0d47a1,stroke-width:2px,color:#fff
+    style PARTITION fill:#f57c00,stroke:#e65100,stroke-width:2px,color:#fff
+    style AGGREGATOR fill:#f57c00,stroke:#e65100,stroke-width:2px,color:#fff
+    
+    style W1 fill:#388e3c,stroke:#2e7d32,stroke-width:2px,color:#fff
+    style W2 fill:#388e3c,stroke:#2e7d32,stroke-width:2px,color:#fff
+    style W3 fill:#388e3c,stroke:#2e7d32,stroke-width:2px,color:#fff
+    style WN fill:#388e3c,stroke:#2e7d32,stroke-width:2px,color:#fff
+    style W1_PROC fill:#66bb6a,stroke:#388e3c,stroke-width:2px,color:#000
+    style W2_PROC fill:#66bb6a,stroke:#388e3c,stroke-width:2px,color:#000
+    style W3_PROC fill:#66bb6a,stroke:#388e3c,stroke-width:2px,color:#000
+    style WN_PROC fill:#66bb6a,stroke:#388e3c,stroke-width:2px,color:#000
+    
+    style PG fill:#5c6bc0,stroke:#3f51b5,stroke-width:2px,color:#fff
+    style REDIS fill:#d32f2f,stroke:#c62828,stroke-width:2px,color:#fff
+    
+    style STREAM fill:#7b1fa2,stroke:#6a1b9a,stroke-width:2px,color:#fff
+    style STREAM_CACHE fill:#ab47bc,stroke:#7b1fa2,stroke-width:2px,color:#fff
+    
+    style P1 fill:#ff9800,stroke:#f57c00,stroke-width:2px,color:#000
+    style P2 fill:#ff9800,stroke:#f57c00,stroke-width:2px,color:#000
+    style P3 fill:#ff9800,stroke:#f57c00,stroke-width:2px,color:#000
+    style P4 fill:#ff9800,stroke:#f57c00,stroke-width:2px,color:#000
+    style P5 fill:#ff9800,stroke:#f57c00,stroke-width:2px,color:#000
+    style P6 fill:#ff9800,stroke:#f57c00,stroke-width:2px,color:#000
+

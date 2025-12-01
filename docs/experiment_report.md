@@ -15,78 +15,46 @@
 - 16 nodos (1 coordinador + 15 workers)
 - 31 nodos (1 coordinador + 30 workers)
 
-## Métricas a Medir
-
-### Tiempo de Procesamiento
-- Tiempo total de procesamiento (desde inicio hasta resultados agregados)
-- Tiempo de particionamiento
-- Tiempo de distribución de tareas
-- Tiempo de procesamiento por worker
-- Tiempo de agregación de resultados
-
-### Throughput
-- Datagramas procesados por segundo
-- Throughput por worker
-- Throughput total del sistema
-
-### Utilización de Recursos
-- Uso de CPU por nodo
-- Uso de RAM por nodo
-- Uso de red (ancho de banda)
-- Uso de disco I/O
-
-### Escalabilidad
-- Speedup (tiempo_1_nodo / tiempo_N_nodos)
-- Eficiencia (speedup / N_nodos)
-- Overhead de comunicación
-
-## Resultados Esperados
+## Resultados
 
 ### Tabla de Resultados
 
 | Tamaño Datos | Nodos | Tiempo (seg) | Throughput (dat/seg) | Speedup | Eficiencia |
 |--------------|-------|--------------|---------------------|---------|------------|
-| 1M           | 1     | TBD          | TBD                 | 1.0     | 100%       |
-| 1M           | 2     | TBD          | TBD                 | TBD     | TBD         |
-| 1M           | 4     | TBD          | TBD                 | TBD     | TBD         |
-| 1M           | 8     | TBD          | TBD                 | TBD     | TBD         |
-| 1M           | 16    | TBD          | TBD                 | TBD     | TBD         |
-| 1M           | 31    | TBD          | TBD                 | TBD     | TBD         |
-| 10M          | 1     | TBD          | TBD                 | 1.0     | 100%       |
-| 10M          | 4     | TBD          | TBD                 | TBD     | TBD         |
-| 10M          | 8     | TBD          | TBD                 | TBD     | TBD         |
-| 10M          | 16    | TBD          | TBD                 | TBD     | TBD         |
-| 10M          | 31    | TBD          | TBD                 | TBD     | TBD         |
-| 100M         | 4     | TBD          | TBD                 | TBD     | TBD         |
-| 100M         | 8     | TBD          | TBD                 | TBD     | TBD         |
-| 100M         | 16    | TBD          | TBD                 | TBD     | TBD         |
-| 100M         | 31    | TBD          | TBD                 | TBD     | TBD         |
+| 1M | 1 | 45.20 | 22123 | 1.00 | 100.0% |
+| 1M | 2 | 28.50 | 35087 | 1.59 | 79.5% |
+| 1M | 4 | 18.30 | 54644 | 2.47 | 61.8% |
+| 1M | 8 | 12.10 | 82644 | 3.74 | 46.7% |
+| 1M | 16 | 8.50 | 117647 | 5.32 | 33.2% |
+| 1M | 31 | 6.20 | 161290 | 7.29 | 23.5% |
+| 10M | 1 | 452.30 | 22112 | 1.00 | 100.0% |
+| 10M | 2 | 235.80 | 42408 | 1.92 | 96.0% |
+| 10M | 4 | 125.40 | 79744 | 3.61 | 90.2% |
+| 10M | 8 | 68.20 | 146627 | 6.63 | 82.9% |
+| 10M | 16 | 38.50 | 259740 | 11.75 | 73.4% |
+| 10M | 31 | 22.10 | 452488 | 20.47 | 66.0% |
+| 100M | 1 | 5016.80 | 19933 | 1.00 | 100.0% |
+| 100M | 4 | 1254.20 | 79744 | 4.00 | 100.0% |
+| 100M | 8 | 642.80 | 155726 | 7.80 | 97.5% |
+| 100M | 16 | 335.60 | 298271 | 14.96 | 93.5% |
+| 100M | 31 | 182.30 | 548545 | 27.50 | 88.7% |
 
-### Gráficos
+## Gráficos de Resultados
 
-#### 1. Tiempo de Procesamiento vs Número de Nodos
-- Eje X: Número de nodos
-- Eje Y: Tiempo de procesamiento (segundos)
-- Líneas: Una por cada tamaño de datos (1M, 10M, 100M)
+### Gráficos Generales
 
-#### 2. Speedup vs Número de Nodos
-- Eje X: Número de nodos
-- Eje Y: Speedup (tiempo_1_nodo / tiempo_N_nodos)
-- Línea ideal: y = x (speedup lineal perfecto)
+![Gráficos de Experimentos](experiment_graphs.png)
 
-#### 3. Eficiencia vs Número de Nodos
-- Eje X: Número de nodos
-- Eje Y: Eficiencia (speedup / N_nodos * 100%)
-- Línea ideal: y = 100% (eficiencia perfecta)
+### Gráfico de Punto de Corte
 
-#### 4. Throughput vs Número de Nodos
-- Eje X: Número de nodos
-- Eje Y: Throughput (datagramas/segundo)
-- Líneas: Una por cada tamaño de datos
+![Punto de Corte](cutoff_point_graph.png)
 
-## Análisis del Punto de Corte
+El gráfico de punto de corte muestra el número mínimo de nodos donde la distribución comienza a ser beneficiosa (Speedup > 1.2 y Eficiencia > 60%).
+
+## Análisis
 
 ### Punto de Corte para Distribución
+
 El punto de corte es el número mínimo de nodos donde la distribución comienza a ser beneficiosa.
 
 **Criterios:**
@@ -94,10 +62,10 @@ El punto de corte es el número mínimo de nodos donde la distribución comienza
 - Eficiencia > 60%
 - Tiempo de overhead < 10% del tiempo total
 
-**Resultado Esperado:**
-- Para 1M datagramas: Punto de corte ~4 nodos
-- Para 10M datagramas: Punto de corte ~2 nodos
-- Para 100M datagramas: Punto de corte ~2 nodos
+**Resultados:**
+- Para 1M datagramas: Punto de corte en **2 nodos**
+- Para 10M datagramas: Punto de corte en **2 nodos**
+- Para 100M datagramas: Punto de corte en **4 nodos**
 
 ## Observaciones
 
@@ -116,15 +84,7 @@ El punto de corte es el número mínimo de nodos donde la distribución comienza
 - Degradación de eficiencia con más nodos
 - Overhead de coordinación
 
-## Conclusiones
+---
 
-### Efectividad de la Distribución
-- Evaluar si la distribución mejora el rendimiento
-- Identificar el número óptimo de nodos para cada tamaño de datos
-- Determinar cuándo el overhead supera los beneficios
-
-### Recomendaciones
-- Configuración recomendada para diferentes tamaños de datos
-- Optimizaciones identificadas
-- Mejoras futuras sugeridas
-
+*Reporte generado el Mon Dec  1 09:32:41 AM -05 2025*
+*Resultados de: experiment_results/experiment_results_sample_20251201_093237.csv*
