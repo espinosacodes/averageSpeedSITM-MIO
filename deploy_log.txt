@@ -1,0 +1,8 @@
+==========================================
+Desplegando SITM-MIO en todos los nodos
+==========================================
+
+1. Desplegando Coordinador (x104m01) con StreamProcessor...
+Deploying coordinator to swarch@x104m01
+ERROR: No se pudo copiar archivos MIO
+ERROR: Fallo al desplegar coordinador (timeout o error)

@@ -15,20 +15,23 @@ PASSWORD="swarch"
 
 echo "Deploying worker $WORKER_ID to $NODE"
 
-sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no $NODE "mkdir -p $WORKER_DIR/proyecto-mio/MIO"
-sshpass -p "$PASSWORD" scp -o StrictHostKeyChecking=no build/libs/$JAR_FILE $NODE:$WORKER_DIR/
+SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=3"
+SCP_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=10"
+
+timeout 30 sshpass -p "$PASSWORD" ssh $SSH_OPTS $NODE "mkdir -p $WORKER_DIR/proyecto-mio/MIO" || { echo "ERROR: No se pudo conectar a $NODE"; exit 1; }
+timeout 60 sshpass -p "$PASSWORD" scp $SCP_OPTS build/libs/$JAR_FILE $NODE:$WORKER_DIR/ || { echo "ERROR: No se pudo copiar JAR"; exit 1; }
 
 # Copy CSV files from coordinator node if available, otherwise from local
 echo "  Copying CSV files..."
-if sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=2 swarch@x104m01 "test -f /home/swarch/proyecto-mio/MIO/lines-241.csv" 2>/dev/null; then
+if timeout 10 sshpass -p "$PASSWORD" ssh $SSH_OPTS swarch@x104m01 "test -f /home/swarch/proyecto-mio/MIO/lines-241.csv" 2>/dev/null; then
     echo "  Copying from coordinator node..."
-    sshpass -p "$PASSWORD" scp -o StrictHostKeyChecking=no swarch@x104m01:/home/swarch/proyecto-mio/MIO/*.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1
+    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS swarch@x104m01:/home/swarch/proyecto-mio/MIO/*.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1 || echo "  Warning: Error copiando CSV desde coordinador"
 else
     echo "  Copying from local machine..."
-    sshpass -p "$PASSWORD" scp -o StrictHostKeyChecking=no proyecto-mio/MIO/*.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1
+    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS proyecto-mio/MIO/*.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1 || echo "  Warning: Error copiando CSV desde local"
 fi
 
-sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no $NODE << ENDSSH
+timeout 60 sshpass -p "$PASSWORD" ssh $SSH_OPTS $NODE << ENDSSH
 cd $WORKER_DIR
 pkill -f "WorkerNode.*${WORKER_ID}" || true
 sleep 1

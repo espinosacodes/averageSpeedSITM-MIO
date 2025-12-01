@@ -1,5 +1,6 @@
 package coordinator;
 
+import calculator.SpeedCalculator;
 import graph.GraphBuilder;
 import model.LineStop;
 import model.Route;
@@ -7,6 +8,7 @@ import model.Stop;
 import parser.CSVParser;
 import services.CoordinatorI;
 import services.GraphServiceI;
+import services.StreamProcessorI;
 import SITM.*;
 
 import com.zeroc.Ice.*;
@@ -39,17 +41,21 @@ public class CoordinatorNode {
             GraphBuilder graphBuilder = new GraphBuilder(routes, stops, lineStops);
             System.out.println("Graph loaded: " + graphBuilder.getArcs().size() + " arcs");
             
+            SpeedCalculator speedCalculator = new SpeedCalculator(graphBuilder);
             GraphServiceI graphService = new GraphServiceI(graphBuilder);
             CoordinatorI coordinator = new CoordinatorI();
+            StreamProcessorI streamProcessor = new StreamProcessorI(speedCalculator);
             
             adapter.add(graphService, Util.stringToIdentity("GraphService"));
             adapter.add(coordinator, Util.stringToIdentity("Coordinator"));
+            adapter.add(streamProcessor, Util.stringToIdentity("StreamProcessor"));
             
             adapter.activate();
             
             System.out.println("Coordinator node started on endpoints: " + endpoints);
             System.out.println("GraphService available at: GraphService");
             System.out.println("Coordinator available at: Coordinator");
+            System.out.println("StreamProcessor available at: StreamProcessor");
             System.out.println("Waiting for workers to connect...");
             
             // Log status every 30 seconds

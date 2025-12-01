@@ -7,11 +7,25 @@ PASSWORD="swarch"
 
 echo "Deploying coordinator to $NODE"
 
-sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no $NODE "mkdir -p $COORDINATOR_DIR"
-sshpass -p "$PASSWORD" scp -o StrictHostKeyChecking=no build/libs/$JAR_FILE $NODE:$COORDINATOR_DIR/
-sshpass -p "$PASSWORD" scp -o StrictHostKeyChecking=no -r proyecto-mio/MIO $NODE:$COORDINATOR_DIR/
+SSH_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=10 -o ServerAliveInterval=5 -o ServerAliveCountMax=3"
+SCP_OPTS="-o StrictHostKeyChecking=no -o ConnectTimeout=10"
 
-sshpass -p "$PASSWORD" ssh -o StrictHostKeyChecking=no $NODE << 'ENDSSH'
+timeout 30 sshpass -p "$PASSWORD" ssh $SSH_OPTS $NODE "mkdir -p $COORDINATOR_DIR" || { echo "ERROR: No se pudo conectar a $NODE"; exit 1; }
+timeout 60 sshpass -p "$PASSWORD" scp $SCP_OPTS build/libs/$JAR_FILE $NODE:$COORDINATOR_DIR/ || { echo "ERROR: No se pudo copiar JAR"; exit 1; }
+
+# Copiar archivos MIO si existen localmente, si no, solo crear el directorio
+if [ -d "proyecto-mio/MIO" ] && [ "$(ls -A proyecto-mio/MIO 2>/dev/null)" ]; then
+    echo "Copiando archivos MIO..."
+    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS -r proyecto-mio/MIO $NODE:$COORDINATOR_DIR/ || { 
+        echo "WARNING: No se pudo copiar archivos MIO, continuando..."
+        timeout 30 sshpass -p "$PASSWORD" ssh $SSH_OPTS $NODE "mkdir -p $COORDINATOR_DIR/proyecto-mio/MIO" || true
+    }
+else
+    echo "WARNING: Directorio proyecto-mio/MIO no existe localmente, creando directorio remoto..."
+    timeout 30 sshpass -p "$PASSWORD" ssh $SSH_OPTS $NODE "mkdir -p $COORDINATOR_DIR/proyecto-mio/MIO" || true
+fi
+
+timeout 60 sshpass -p "$PASSWORD" ssh $SSH_OPTS $NODE << 'ENDSSH'
 cd /home/swarch/sitm-mio
 pkill -f CoordinatorNode || true
 sleep 1
