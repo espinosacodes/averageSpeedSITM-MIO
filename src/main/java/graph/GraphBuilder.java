@@ -15,6 +15,7 @@ public class GraphBuilder {
     private List<LineStop> lineStops;
     private List<Arc> arcs;
     
+    //patron para cosnturir el grafo, el builder pattern
     public GraphBuilder(List<Route> routes, List<Stop> stops, List<LineStop> lineStops) {
         this.routes = routes.stream().collect(Collectors.toMap(Route::getLineId, r -> r));
         this.stops = stops.stream().collect(Collectors.toMap(Stop::getStopId, s -> s));

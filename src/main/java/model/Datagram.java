@@ -20,6 +20,7 @@ public class Datagram {
     public Datagram() {
     }
     
+    //Constructor para crear un Datagram a partir de los datos del CSV.
     public Datagram(int eventType, String registerDate, int stopId, int odometer,
                    double latitude, double longitude, int taskId, int lineId,
                    int tripId, String datagramDate, int busId) {

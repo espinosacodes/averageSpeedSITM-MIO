@@ -46,6 +46,10 @@ public class DataProcessorI implements DataProcessor {
         System.out.println("DataProcessor " + workerId + " shutting down");
     }
     
+    //adapter pattern para convertir el datagram de ice a datagram de java
+    //Adaptan objetos del modelo a interfaces Ice y viceversa.
+    //Servicios Ice CoordinatorI.java, DataProcessorI.java, GraphServiceI.java, StreamProcessorI.java
+
     private List<Datagram> convertToDatagramList(SITM.Datagram[] iceDatagrams) {
         List<Datagram> list = new java.util.ArrayList<>();
         for (SITM.Datagram dg : iceDatagrams) {

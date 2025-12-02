@@ -669,3 +669,4 @@ Almacena resultados agregados en base de datos PostgreSQL para persistencia perm
 | Load Balancing | Round-robin de particiones a workers | Utilización uniforme, reducción de latencia |
 | Caching Pattern | Redis para consultas frecuentes | Latencia < 100ms, 10,000+ consultas/seg |
 
+

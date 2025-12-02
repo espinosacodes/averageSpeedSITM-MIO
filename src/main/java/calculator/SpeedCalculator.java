@@ -15,6 +15,7 @@ public class SpeedCalculator {
     private Map<Integer, List<Arc>> arcsByRoute;
     private static final double MAX_DISTANCE_TO_ARC = 0.1;
     
+    //Dependency Injection
     public SpeedCalculator(GraphBuilder graphBuilder) {
         this.graphBuilder = graphBuilder;
         buildArcIndex();
@@ -27,6 +28,7 @@ public class SpeedCalculator {
         }
     }
     
+    //strategy pattern para calcular la velocidad de los arcos
     public Map<Integer, SpeedResult> calculateSpeeds(List<Datagram> datagrams) {
         Map<Integer, List<Datagram>> datagramsByRoute = datagrams.stream()
             .filter(d -> d.getLineId() > 0)

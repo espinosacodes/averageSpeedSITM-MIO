@@ -12,6 +12,7 @@ import java.util.List;
 
 public class CSVParser {
     
+    //Template Method Pattern para parsear los archivos CSV.
     public static List<Route> parseRoutes(String filePath) throws IOException {
         List<Route> routes = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {

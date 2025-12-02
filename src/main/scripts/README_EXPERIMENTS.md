@@ -121,3 +121,4 @@ Para cambiar la configuración, edita las variables al inicio de cada script.
 - Verifica conectividad de red entre nodos
 - Asegúrate de que el coordinador esté corriendo antes de desplegar workers
 
+

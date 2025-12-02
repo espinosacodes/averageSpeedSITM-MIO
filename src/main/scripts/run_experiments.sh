@@ -8,7 +8,7 @@ RESULTS_DIR="experiment_results"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 # Configuraciones de prueba
-FILE_SIZES=("1M" "10M" "100M")
+FILE_SIZES=("100M")
 FILE_PATHS=("proyecto-mio/MIO/test_files/datagrams_1M.csv" "proyecto-mio/MIO/test_files/datagrams_10M.csv" "proyecto-mio/MIO/test_files/datagrams_100M.csv")
 NODE_CONFIGS=(1 2 4 8 16 31)
 

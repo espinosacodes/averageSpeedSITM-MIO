@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class CoordinatorI implements Coordinator {
     
+    //Registry/Service Locator Pattern
     private Map<String, WorkerInfo> workers = new ConcurrentHashMap<>();
     private Map<String, ProcessingTask> tasks = new ConcurrentHashMap<>();
     private Map<String, PartitionInfo> partitions = new ConcurrentHashMap<>();

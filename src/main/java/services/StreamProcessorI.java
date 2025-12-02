@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class StreamProcessorI implements StreamProcessor {
     
     private SpeedCalculator speedCalculator;
+    //Observer pattern para notificar los cambios de velocidad en tiempo real.
     private Map<Integer, SpeedResult> currentSpeeds = new ConcurrentHashMap<>();
     private Queue<SpeedUpdate> recentUpdates = new ArrayDeque<>();
     private final int MAX_RECENT_UPDATES = 1000;

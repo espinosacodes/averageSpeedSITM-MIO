@@ -62,6 +62,7 @@ public class WorkerNode {
             String workerEndpoint = endpointsArray[0].toString();
             System.out.println("Worker endpoint: " + workerEndpoint);
             
+            //proxy pattern para la comunicacion remota 
             CoordinatorPrx coordinator = CoordinatorPrx.checkedCast(
                 communicator.stringToProxy("Coordinator:" + coordinatorEndpoint));
             

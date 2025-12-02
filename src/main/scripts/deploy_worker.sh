@@ -23,12 +23,26 @@ timeout 60 sshpass -p "$PASSWORD" scp $SCP_OPTS build/libs/$JAR_FILE $NODE:$WORK
 
 # Copy CSV files from coordinator node if available, otherwise from local
 echo "  Copying CSV files..."
-if timeout 10 sshpass -p "$PASSWORD" ssh $SSH_OPTS swarch@x104m01 "test -f /home/swarch/proyecto-mio/MIO/lines-241.csv" 2>/dev/null; then
-    echo "  Copying from coordinator node..."
-    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS swarch@x104m01:/home/swarch/proyecto-mio/MIO/*.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1 || echo "  Warning: Error copiando CSV desde coordinador"
+# Primero intentar desde coordinador (ruta sitm-mio)
+if timeout 10 sshpass -p "$PASSWORD" ssh $SSH_OPTS swarch@x104m01 "test -f /home/swarch/sitm-mio/proyecto-mio/MIO/lines-241.csv" 2>/dev/null; then
+    echo "  Copying from coordinator node (sitm-mio)..."
+    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS swarch@x104m01:/home/swarch/sitm-mio/proyecto-mio/MIO/lines-241.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1
+    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS swarch@x104m01:/home/swarch/sitm-mio/proyecto-mio/MIO/stops-241.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1
+    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS swarch@x104m01:/home/swarch/sitm-mio/proyecto-mio/MIO/linestops-241.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1
+    echo "  ✓ Archivos CSV copiados"
+# Si no, intentar ruta alternativa
+elif timeout 10 sshpass -p "$PASSWORD" ssh $SSH_OPTS swarch@x104m01 "test -f /home/swarch/proyecto-mio/MIO/lines-241.csv" 2>/dev/null; then
+    echo "  Copying from coordinator node (proyecto-mio)..."
+    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS swarch@x104m01:/home/swarch/proyecto-mio/MIO/lines-241.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1
+    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS swarch@x104m01:/home/swarch/proyecto-mio/MIO/stops-241.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1
+    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS swarch@x104m01:/home/swarch/proyecto-mio/MIO/linestops-241.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1
+    echo "  ✓ Archivos CSV copiados"
 else
     echo "  Copying from local machine..."
-    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS proyecto-mio/MIO/*.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1 || echo "  Warning: Error copiando CSV desde local"
+    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS proyecto-mio/MIO/lines-241.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1
+    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS proyecto-mio/MIO/stops-241.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1
+    timeout 120 sshpass -p "$PASSWORD" scp $SCP_OPTS proyecto-mio/MIO/linestops-241.csv $NODE:$WORKER_DIR/proyecto-mio/MIO/ 2>&1 | tail -1
+    echo "  ✓ Archivos CSV copiados"
 fi
 
 timeout 60 sshpass -p "$PASSWORD" ssh $SSH_OPTS $NODE << ENDSSH
@@ -37,12 +51,33 @@ pkill -f "WorkerNode.*${WORKER_ID}" || true
 sleep 1
 
 # Ensure CSV files are available (create symlink if needed)
-if [ ! -d proyecto-mio/MIO ] || [ ! -f proyecto-mio/MIO/lines-241.csv ]; then
-    mkdir -p proyecto-mio
-    if [ -d /home/swarch/proyecto-mio/MIO ]; then
+cd $WORKER_DIR
+if [ ! -d proyecto-mio/MIO ]; then
+    mkdir -p proyecto-mio/MIO
+fi
+
+# Verificar que los archivos críticos existan
+if [ ! -f proyecto-mio/MIO/lines-241.csv ]; then
+    # Intentar symlink desde sitm-mio primero
+    if [ -f /home/swarch/sitm-mio/proyecto-mio/MIO/lines-241.csv ]; then
+        echo "  Creando symlinks desde /home/swarch/sitm-mio/proyecto-mio/MIO/"
+        ln -sf /home/swarch/sitm-mio/proyecto-mio/MIO/lines-241.csv proyecto-mio/MIO/ 2>/dev/null || true
+        ln -sf /home/swarch/sitm-mio/proyecto-mio/MIO/stops-241.csv proyecto-mio/MIO/ 2>/dev/null || true
+        ln -sf /home/swarch/sitm-mio/proyecto-mio/MIO/linestops-241.csv proyecto-mio/MIO/ 2>/dev/null || true
+    elif [ -f /home/swarch/proyecto-mio/MIO/lines-241.csv ]; then
+        echo "  Creando symlinks desde /home/swarch/proyecto-mio/MIO/"
         ln -sf /home/swarch/proyecto-mio/MIO proyecto-mio/MIO
     fi
+    
+    # Verificar nuevamente
+    if [ ! -f proyecto-mio/MIO/lines-241.csv ]; then
+        echo "ERROR: Archivos CSV del grafo no encontrados en $WORKER_DIR/proyecto-mio/MIO/"
+        echo "  Archivos en directorio:"
+        ls -la proyecto-mio/MIO/ 2>/dev/null || echo "  (directorio no existe)"
+        exit 1
+    fi
 fi
+echo "  ✓ Archivos CSV verificados"
 
 nohup java -Xmx2g -Djava.library.path=/usr/lib \
      -jar $JAR_FILE worker.WorkerNode $WORKER_ID "$COORDINATOR_ENDPOINT" > worker_${WORKER_ID}.log 2>&1 &

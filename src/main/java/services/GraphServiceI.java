@@ -9,6 +9,7 @@ import com.zeroc.Ice.Current;
 import java.util.ArrayList;
 import java.util.List;
 
+//Facade pattern para simplificar la interfaz del servicio de grafo.
 public class GraphServiceI implements GraphService {
     
     private GraphBuilder graphBuilder;

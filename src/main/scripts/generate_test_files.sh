@@ -89,3 +89,4 @@ echo "Files available at:"
 echo "  Local: $OUTPUT_DIR/"
 echo "  Remote: $COORDINATOR_NODE:$COORDINATOR_DIR/proyecto-mio/MIO/test_files/"
 
+
